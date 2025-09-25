@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Logga in</title>
+    
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        form { max-width: 400px; }
+        input { display: block; margin-bottom: 1rem; width: 100%; padding: 0.5rem; }
+        button { padding: 0.5rem 1rem; }
+        .flash { color: red; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Logga in</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="text" name="username" placeholder="Användarnamn" required>
+        <input type="password" name="password" placeholder="Lösenord" required>
+        <button type="submit">Logga in</button>
+    </form>
+    <p>Inte registrerad? <a href="{{ url_for('register') }}">Skapa konto</a></p>
+</body>
+</html>

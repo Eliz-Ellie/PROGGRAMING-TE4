@@ -1,0 +1,136 @@
+/* --- General --- */
+body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+h1, h2 {
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: #007BFF;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Layout --- */
+.layout {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.left, .right {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.left {
+    flex: 2 1 600px; /* Grow more, min-width 600px */
+}
+
+.right {
+    flex: 1 1 300px; /* Smaller column, min-width 300px */
+    min-width: 280px;
+}
+
+/* --- Forms --- */
+form label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="number"],
+form select,
+form textarea {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+form textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #007BFF;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* --- Table --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th {
+    background-color: #f1f1f1;
+    font-weight: bold;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+td {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.view {
+    display: inline;
+}
+
+.edit {
+    display: none;
+}
+
+.ok {
+    color: green;
+    font-weight: bold;
+}
+
+.fail {
+    color: red;
+    font-weight: bold;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .layout {
+        flex-direction: column;
+    }
+
+    .left, .right {
+        flex: 1 1 100%;
+    }
+}

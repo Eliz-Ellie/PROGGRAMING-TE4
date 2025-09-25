@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Ämnen & Betyg</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Välkommen, {{ current_user.username }}! <a href="{{ url_for('logout') }}">(Logga ut)</a></h1>
+
+    <div class="layout">
+    <div class="left">
+    <!-- Formulär för nytt ämne -->
+    <form id="add-form" method="POST">
+        <label>Ämne:</label>
+        <input type="text" name="ämne" required>
+
+        <label>Betyg:</label>
+        <select name="betyg" required>
+            <option value="">Välj betyg</option>
+            <option>A</option><option>B</option><option>C</option>
+            <option>D</option><option>E</option><option>F</option>
+        </select>
+
+        <label>Poäng:</label>
+        <input type="number" name="points" min="50" step="50" required>
+
+        <label>
+            <input type="checkbox" name="required_for_graduation"> Gemensamt ämne
+        </label>
+
+        <label>Notes:</label>
+        <textarea name="notes" placeholder="Valfria anteckningar"></textarea>
+
+        <button type="submit">Lägg till</button>
+    </form>
+
+    <!-- Tabell med ämnen -->
+    <h2>Dina ämnen och betyg</h2>
+    <table id="subjects-table">
+        <tr>
+            <th>Ämne</th>
+            <th>Betyg</th>
+            <th>Poäng</th>
+            <th>Gemensamt</th>
+            <th>Notes</th>
+            <th>Åtgärder</th>
+        </tr>
+        {% for s in all_subjects %}
+        <tr data-id="{{ s.id }}">
+            <td>
+                <span class="view">{{ s.subject_name }}</span>
+                <input class="edit" type="text" name="ämne" value="{{ s.subject_name }}" style="display:none;">
+            </td>
+            <td>
+                <span class="view">{{ s.grade }}</span>
+                <select class="edit" name="betyg" style="display:none;">
+                    {% for g in ["A","B","C","D","E","F"] %}
+                        <option value="{{ g }}" {% if s.grade == g %}selected{% endif %}>{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <span class="view">{{ s.points }}</span>
+                <input class="edit" type="number" name="points" value="{{ s.points }}" min="50" step="50" style="display:none;">
+            </td>
+            <td>
+                <span class="view">{{ "Ja" if s.required_for_graduation else "Nej" }}</span>
+                <input class="edit" type="checkbox" name="required_for_graduation" {% if s.required_for_graduation %}checked{% endif %} style="display:none;">
+            </td>
+            <td>
+                <span class="view">{{ s.notes or "" }}</span>
+                <textarea class="edit" name="notes" style="display:none;">{{ s.notes or "" }}</textarea>
+            </td>
+            <td>
+                <button type="button" class="edit-btn">Redigera</button>
+                <button type="button" class="save-btn" style="display:none;">Spara</button>
+                <form class="delete-form" method="POST" action="/delete/{{ s.id }}" style="display:inline;">
+                    <button type="submit">Ta bort</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+  <div class="right">
+
+   <h2>Sammanställning</h2>
+<p>
+  Medelbetyg: 
+  <strong id="medel">{{ medel }}</strong>
+  (<span id="medel_letter">{{ medel_letter }}</span>)
+</p>
+<p>Meritvärde: <strong id="merit">{{ merit }}</strong></p>
+<p>Examenstatus: <span id="examen">
+  {% if examen %}
+    <span class="ok">Godkänd</span>
+  {% else %}
+    <span class="fail">Ej godkänd</span>
+  {% endif %}
+</span></p>
+
+<h2>Examenskrav</h2>
+<form id="requirements-form" method="POST" action="{{ url_for('update_requirements') }}">
+  <label>Minsta merit:</label>
+  <input type="number" name="min_merit" value="{{ requirements.min_merit }}">
+  <label>Minsta antal godkända ämnen:</label>
+  <input type="number" name="min_passed_subjects" value="{{ requirements.min_passed_subjects }}">
+  <button type="submit">Spara krav</button>
+</form>
+<p id="req-status" style="color: green; display: none;">Krav uppdaterade ✔</p>
+</div>
+</div>
+    <script>
+    async function updateStats() {
+    const statsResp = await fetch("/stats");
+    const stats = await statsResp.json();
+
+    document.querySelector("#medel").textContent = stats.medel;
+    document.querySelector("#medel_letter").textContent = stats.medel_letter;
+    document.querySelector("#merit").textContent = stats.merit;
+    document.querySelector("#examen").innerHTML = stats.examen
+        ? '<span class="ok">Godkänd</span>'
+        : '<span class="fail">Ej godkänd</span>';
+}
+
+// Examenskrav AJAX
+document.querySelector("#requirements-form").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const response = await fetch(e.target.action, { method: "POST", body: formData });
+
+    if (response.ok) {
+        const status = document.querySelector("#req-status");
+        status.style.display = "inline";
+        setTimeout(() => status.style.display = "none", 2000);
+
+        await updateStats();
+    } else {
+        alert("Kunde inte uppdatera kraven.");
+    }
+});
+
+
+    // Redigera
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const row = this.closest("tr");
+            row.querySelectorAll(".view").forEach(el => el.style.display = "none");
+            row.querySelectorAll(".edit").forEach(el => el.style.display = "inline");
+            row.querySelector(".save-btn").style.display = "inline";
+            this.style.display = "none";
+        });
+    });
+
+    // Spara
+    document.querySelectorAll(".save-btn").forEach(btn => {
+        btn.addEventListener("click", async function() {
+            const row = this.closest("tr");
+            const id = row.dataset.id;
+
+            const formData = new FormData();
+            formData.append("ämne", row.querySelector("input[name='ämne']").value);
+            formData.append("betyg", row.querySelector("select[name='betyg']").value);
+            formData.append("points", row.querySelector("input[name='points']").value);
+            if (row.querySelector("input[name='required_for_graduation']").checked) {
+                formData.append("required_for_graduation", "on");
+            }
+            formData.append("notes", row.querySelector("textarea[name='notes']").value);
+
+            const response = await fetch(`/update/${id}`, { method: "POST", body: formData });
+            if (response.ok) {
+                const data = await response.json();
+                row.querySelector("td:nth-child(1) .view").textContent = data.subject_name;
+                row.querySelector("td:nth-child(2) .view").textContent = data.grade;
+                row.querySelector("td:nth-child(3) .view").textContent = data.points;
+                row.querySelector("td:nth-child(4) .view").textContent = data.required_for_graduation ? "Ja" : "Nej";
+                row.querySelector("td:nth-child(5) .view").textContent = data.notes;
+
+                row.querySelectorAll(".view").forEach(el => el.style.display = "inline");
+                row.querySelectorAll(".edit").forEach(el => el.style.display = "none");
+                row.querySelector(".edit-btn").style.display = "inline";
+                row.querySelector(".save-btn").style.display = "none";
+
+                await updateStats();
+            } else {
+                const error = await response.json();
+                alert("Fel: " + error.error);
+            }
+        });
+    });
+
+    // Ta bort
+    document.querySelectorAll(".delete-form").forEach(form => {
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            if (!confirm("Är du säker på att du vill ta bort?")) return;
+            const response = await fetch(form.action, { method: "POST" });
+            if (response.ok) {
+                form.closest("tr").remove();
+                await updateStats();
+            }
+        });
+    });
+
+    // Lägg till nytt ämne
+    document.querySelector("#add-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const response = await fetch("/", { method: "POST", body: formData });
+        if (response.ok) {
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert("Fel: " + error.error);
+        }
+    });
+    </script>
+</body>
+</html>
