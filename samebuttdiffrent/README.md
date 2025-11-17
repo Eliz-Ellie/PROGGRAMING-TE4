@@ -13,19 +13,28 @@ Quick start
    Set-Location 'C:\Users\Albin\github\PROGGRAMING-TE4\samebuttdiffrent'
    ```
 2. Start all servers (they run detached and write pid files):
-   ```powershell
-   .\start-all.ps1
-   ```
+    - Recommended (ensures script runs even if your session blocks scripts):
+       ```powershell
+       powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\start-all.ps1'"
+       ```
+    - Or (if your PowerShell allows running scripts):
+       ```powershell
+       .\start-all.ps1
+       ```
 3. Verify in your browser:
    - http://localhost:8000/n1.php
    - http://127.0.0.1:5000/
    - http://127.0.0.1:8001/
 
 Stopping servers
-- Stop all:
-  ```powershell
-  .\stop-all.ps1
-  ```
+- Stop all (recommended):
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\stop-all.ps1'"
+   ```
+- Or:
+   ```powershell
+   .\stop-all.ps1
+   ```
 - Or stop individual servers with `.\stop-php-server.ps1`, `.\stop-flask.ps1`, or `.\stop-fastapi.ps1`.
 
 Notes
