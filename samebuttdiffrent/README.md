@@ -1,39 +1,51 @@
 # samebuttdiffrent — local dev servers
 
-This folder contains three demo apps and small PowerShell helper scripts to run them locally for development.
+- This folder contains three demo apps and small PowerShell helper scripts organized for local development.
+
+Project layout (inside this folder)
+- `apps/php/` — PHP app (docroot)
+- `apps/flask/` — Flask app
+- `apps/fastapi/` — FastAPI app
+- `scripts/` — helper PowerShell scripts to start/stop apps
+- `data/` — SQLite databases (php.db, flask.db, fastapi.db)
+- `var/pids/` — runtime pid files created by the scripts
 
 Apps and ports
-- `n1.php` — PHP built-in server on http://localhost:8000
-- `n2FLASK.py` — Flask app on http://127.0.0.1:5000
-- `n3FastAPI.py` — FastAPI (uvicorn) on http://127.0.0.1:8001
+- PHP (apps/php) — http://localhost:8000
+- Flask (apps/flask) — http://127.0.0.1:5000
+- FastAPI (apps/fastapi) — http://127.0.0.1:8001
 
 Quick start
 1. Open PowerShell and change to this folder:
-   ```powershell
-   Set-Location 'C:\Users\Albin\github\PROGGRAMING-TE4\samebuttdiffrent'
-   ```
-2. Start all servers (they run detached and write pid files):
+    ```powershell
+    Set-Location 'C:\Users\Albin\github\PROGGRAMING-TE4\samebuttdiffrent'
+    ```
+2. Initialize the databases (one-time):
+    ```powershell
+    python data/init_dbs.py
+    ```
+3. Start all servers (they run detached and write pid files):
     - Recommended (ensures script runs even if your session blocks scripts):
        ```powershell
-       powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\start-all.ps1'"
+       powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\scripts\\start-all.ps1'"
        ```
     - Or (if your PowerShell allows running scripts):
        ```powershell
-       .\start-all.ps1
+       .\scripts\start-all.ps1
        ```
-3. Verify in your browser:
-   - http://localhost:8000/n1.php
-   - http://127.0.0.1:5000/
-   - http://127.0.0.1:8001/
+4. Verify in your browser:
+    - http://localhost:8000/n1.php
+    - http://127.0.0.1:5000/
+    - http://127.0.0.1:8001/
 
 Stopping servers
 - Stop all (recommended):
    ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\stop-all.ps1'"
+   powershell -NoProfile -ExecutionPolicy Bypass -Command "& '$PWD\\scripts\\stop-all.ps1'"
    ```
 - Or:
    ```powershell
-   .\stop-all.ps1
+   .\scripts\stop-all.ps1
    ```
 - Or stop individual servers with `.\stop-php-server.ps1`, `.\stop-flask.ps1`, or `.\stop-fastapi.ps1`.
 
